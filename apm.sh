@@ -48,6 +48,13 @@ ps_level () {
         echo $1,$cpu,$mem >> "APM6_metrics.csv"
 }
 
+sysData () {
+	rx_rate=$(ifstat ens33 | grep ens33 | sed s/K//g | awk '{print $7}')
+	tx_rate=$(ifstat ens33 | grep ens33 | awk '{print $9}')
+	write_speed=$(iostat -d -k sda | awk '/^\s*sda/ {print $4}')
+	totalSpace=$(df -hm / | sed -n '2p' | xargs | cut -d ' ' -f 4)
+	echo $1,$rx_rate,$tx_rate,$write_speed,$totalSpace >> "System_metrics.csv"
+}
 
 cleanup(){
 	pkill -f -9 APM1
@@ -69,6 +76,7 @@ SECONDS=0
 
 	while true ; #Infinte Loop
 	do
+		sysData $SECONDS
 		#sleep for 5 seconds
 		sleep 5
 		if [[ $duration -ge 900 ]] 
